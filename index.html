@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>פרוטוקול סיום הקמה</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      direction: rtl;
+      min-height: 100vh;
+      padding: 20px 20px 120px;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url('https://d15q6k8l9pfut7.cloudfront.net/events/68237118650ee1d0c89205d31747156942785_coverImage.jpg');
+      background-size: cover;
+      background-position: center;
+      opacity: 0.5;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.82);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 0;
+      color: #222;
+      border-bottom: 3px solid #ff00ff;
+      padding-bottom: 12px;
+      font-size: 22px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #444;
+      margin: 18px 0 8px;
+    }
+
+    .photo-block {
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .photo-label {
+      font-weight: bold;
+      font-size: 14px;
+      color: #222;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .photo-label .note {
+      font-size: 12px;
+      font-weight: 400;
+      color: #d84315;
+    }
+
+    .photo-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .capture-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      background: #f1f5f9;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #475569;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+
+    .capture-btn.done {
+      background: rgba(255,0,255,0.08);
+      border-color: #ff00ff;
+      color: #d600d6;
+      font-weight: bold;
+    }
+
+    input[type="file"] { display: none; }
+
+    .preview {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      display: none;
+      border: 2px solid #ff00ff;
+    }
+    .preview.visible { display: block; }
+
+    .checks-block {
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-item:active { background: #fdf4ff; }
+    input[type="checkbox"] { display: none; }
+
+    .custom-check {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      font-size: 13px;
+    }
+
+    .check-item.checked .custom-check {
+      background: #ff00ff;
+      border-color: #ff00ff;
+      color: white;
+    }
+
+    .check-item span {
+      font-size: 14px;
+      color: #222;
+      line-height: 1.4;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.95);
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 20px;
+      backdrop-filter: blur(8px);
+    }
+
+    .bottom-bar-inner { max-width: 500px; margin: 0 auto; }
+
+    .progress {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .progress strong { color: #222; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: #d600d6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 10px rgba(214,0,214,0.3);
+      font-family: inherit;
+    }
+    .submit-btn:disabled {
+      background: #ccc;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    .submit-btn:not(:disabled):hover {
+      opacity: 0.95;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(214,0,214,0.4);
+    }
+
+    #success-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.97);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+      backdrop-filter: blur(12px);
+    }
+    #success-screen.visible { display: flex; }
+    .success-icon { font-size: 4rem; margin-bottom: 1rem; }
+    #success-screen h2 {
+      font-size: 1.4rem;
+      color: #222;
+      margin-bottom: 0.5rem;
+      border-bottom: 3px solid #ff00ff;
+      padding-bottom: 10px;
+    }
+    #success-screen p { color: #666; margin-bottom: 2rem; font-size: 0.9rem; }
+
+    .wa-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 320px;
+      padding: 15px;
+      background: #25d366;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(37,211,102,0.3);
+      transition: 0.3s;
+    }
+    .wa-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(37,211,102,0.4);
+    }
+
+    #loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.92);
+      z-index: 200;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    #loading.visible { display: flex; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #f3d0f3;
+      border-top-color: #d600d6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { color: #d600d6; font-size: 0.9rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>📟 פרוטוקול סיום הקמה</h2>
+
+  <div class="section-title">📷 תמונות נדרשות</div>
+
+  <div class="photo-block">
+    <div class="photo-label">עמדה עומדת</div>
+    <div class="photo-input-wrapper">
+      <button class="capture-btn" onclick="document.getElementById('stand-input').click()" id="stand-btn">📷 צלם</button>
+      <input type="file" id="stand-input" accept="image/*" capture="environment" onchange="handlePhoto(this,'stand')">
+      <img id="stand-preview" class="preview">
+    </div>
+  </div>
+
+  <div class="photo-block">
+    <div class="photo-label">חיווט מיקסר</div>
+    <div class="photo-input-wrapper">
+      <button class="capture-btn" onclick="document.getElementById('mixer-input').click()" id="mixer-btn">📷 צלם</button>
+      <input type="file" id="mixer-input" accept="image/*" capture="environment" onchange="handlePhoto(this,'mixer')">
+      <img id="mixer-preview" class="preview">
+    </div>
+  </div>
+
+  <div class="photo-block">
+    <div class="photo-label">
+      מסכים
+      <span class="note">⚠️ להציג לפני העלייה</span>
+    </div>
+    <div class="photo-input-wrapper">
+      <button class="capture-btn" onclick="document.getElementById('screens-input').click()" id="screens-btn">📷 צלם</button>
+      <input type="file" id="screens-input" accept="image/*" capture="environment" onchange="handlePhoto(this,'screens')">
+      <img id="screens-preview" class="preview">
+    </div>
+  </div>
+
+  <div class="section-title">✅ רשימת בדיקות</div>
+
+  <div class="checks-block">
+    <div class="check-item" onclick="toggleCheck(this,'monitors')">
+      <input type="checkbox" id="monitors">
+      <div class="custom-check"></div>
+      <span>מוניטורים על הבמה (פלייבק ומיקרופון)</span>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this,'water')">
+      <input type="checkbox" id="water">
+      <div class="custom-check"></div>
+      <span>מים לעמדה</span>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this,'mics')">
+      <input type="checkbox" id="mics">
+      <div class="custom-check"></div>
+      <span>שני מיקרופונים על 275 דיליי, עם סוללות</span>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this,'note')">
+      <input type="checkbox" id="note">
+      <div class="custom-check"></div>
+      <span>פתק עם שמות הזוג/החברה על העמדה</span>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bottom-bar-inner">
+    <div class="progress" id="progress-text"><strong>0</strong> מתוך 7 סעיפים הושלמו</div>
+    <button class="submit-btn" id="submit-btn" disabled onclick="submitForm()">שלח פרוטוקול ✅</button>
+  </div>
+</div>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>שומר תמונות ומעלה...</p>
+</div>
+
+<div id="success-screen">
+  <div class="success-icon">✅</div>
+  <h2>הפרוטוקול הושלם!</h2>
+  <p>כל הפריטים אומתו והתמונות נשמרו.</p>
+  <a class="wa-btn" id="wa-link" href="#" target="_blank">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.397 5.61L0 24l6.562-1.358A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.126-1.443l-.368-.218-3.895.806.836-3.796-.24-.39A9.818 9.818 0 1112 21.818z"/></svg>
+    שלח למנהל בווטסאפ
+  </a>
+</div>
+
+<script>
+  // *** החלף כאן את ה-URL של ה-Apps Script שלך ***
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQedF8bnrM05DCeKClvpXUVB2pZOjXGDhpYoQNjCYauCQkUal2P8DpjilroF-bapzG/exec';
+  const MANAGER_PHONE = '972502801404';
+
+  const photos = { stand: null, mixer: null, screens: null };
+  const checks = { monitors: false, water: false, mics: false, note: false };
+
+  function handlePhoto(input, key) {
+    const file = input.files[0];
+    if (!file) return;
+    resizeImage(file, 1200, (base64) => {
+      photos[key] = base64;
+      const preview = document.getElementById(key + '-preview');
+      preview.src = base64;
+      preview.classList.add('visible');
+      const btn = document.getElementById(key + '-btn');
+      btn.textContent = '✅ צולם';
+      btn.classList.add('done');
+      updateProgress();
+    });
+  }
+
+  function resizeImage(file, maxSize, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+          else { w = Math.round(w * maxSize / h); h = maxSize; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function toggleCheck(el, key) {
+    checks[key] = !checks[key];
+    el.classList.toggle('checked', checks[key]);
+    el.querySelector('input').checked = checks[key];
+    el.querySelector('.custom-check').textContent = checks[key] ? '✓' : '';
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const photosDone = Object.values(photos).filter(Boolean).length;
+    const checksDone = Object.values(checks).filter(Boolean).length;
+    const total = photosDone + checksDone;
+    document.getElementById('progress-text').innerHTML =
+      '<strong>' + total + '</strong> מתוך 7 סעיפים הושלמו';
+    document.getElementById('submit-btn').disabled = total < 7;
+  }
+
+  function submitForm() {
+    document.getElementById('loading').classList.add('visible');
+    const data = {
+      standPhoto:   photos.stand,
+      mixerPhoto:   photos.mixer,
+      screensPhoto: photos.screens,
+      monitors: checks.monitors,
+      water:    checks.water,
+      mics:     checks.mics,
+      note:     checks.note
+    };
+
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    })
+    .then(r => r.json())
+    .then(result => {
+      if (result.success) {
+        onSuccess(result.reportUrl);
+      } else {
+        onError(new Error(result.error || 'שגיאה לא ידועה'));
+      }
+    })
+    .catch(err => onError(err));
+  }
+
+  function onSuccess(reportUrl) {
+    document.getElementById('loading').classList.remove('visible');
+    const msg = encodeURIComponent('פרוטוקול הקמה הושלם ✅\nלצפייה בדוח: ' + reportUrl);
+    document.getElementById('wa-link').href = 'https://wa.me/' + MANAGER_PHONE + '?text=' + msg;
+    document.getElementById('success-screen').classList.add('visible');
+  }
+
+  function onError(err) {
+    document.getElementById('loading').classList.remove('visible');
+    alert('שגיאה בשליחה. נסה שוב.\n' + (err.message || err));
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>
