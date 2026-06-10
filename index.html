@@ -341,12 +341,17 @@
       <span>פתק עם שמות הזוג/החברה על העמדה</span>
     </div>
   </div>
+
+  <div class="section-title">📝 הערות / חוסרים</div>
+  <div class="checks-block" style="padding:12px 14px;">
+    <textarea id="remarks" placeholder="אם יש פריטים חסרים — פרט כאן..." rows="3" style="width:100%;border:none;outline:none;font-size:14px;font-family:inherit;resize:none;color:#222;background:transparent;direction:rtl;"></textarea>
+  </div>
 </div>
 
 <div class="bottom-bar">
   <div class="bottom-bar-inner">
     <div class="progress" id="progress-text"><strong>0</strong> מתוך 7 סעיפים הושלמו</div>
-    <button class="submit-btn" id="submit-btn" disabled onclick="submitForm()">שלח פרוטוקול ✅</button>
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">שלח עם חוסרים ⚠️</button>
   </div>
 </div>
 
@@ -356,9 +361,9 @@
 </div>
 
 <div id="success-screen">
-  <div class="success-icon">✅</div>
-  <h2>הפרוטוקול הושלם!</h2>
-  <p>כל הפריטים אומתו והתמונות נשמרו.</p>
+  <div class="success-icon" id="success-icon">✅</div>
+  <h2 id="success-title">הפרוטוקול הושלם!</h2>
+  <p id="success-msg">כל הפריטים אומתו והתמונות נשמרו.</p>
   <a class="wa-btn" id="wa-link" href="#" target="_blank">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.397 5.61L0 24l6.562-1.358A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.126-1.443l-.368-.218-3.895.806.836-3.796-.24-.39A9.818 9.818 0 1112 21.818z"/></svg>
     שלח למנהל בווטסאפ
@@ -422,7 +427,16 @@
     const total = photosDone + checksDone;
     document.getElementById('progress-text').innerHTML =
       '<strong>' + total + '</strong> מתוך 7 סעיפים הושלמו';
-    document.getElementById('submit-btn').disabled = total < 7;
+    const btn = document.getElementById('submit-btn');
+    if (total === 7) {
+      btn.textContent = 'שלח פרוטוקול ✅';
+      btn.style.background = '#d600d6';
+      btn.style.boxShadow = '0 4px 10px rgba(214,0,214,0.3)';
+    } else {
+      btn.textContent = 'שלח עם חוסרים ⚠️';
+      btn.style.background = '#f59e0b';
+      btn.style.boxShadow = '0 4px 10px rgba(245,158,11,0.3)';
+    }
   }
 
   function submitForm() {
@@ -436,7 +450,8 @@
       monitors: checks.monitors,
       water:    checks.water,
       mics:     checks.mics,
-      note:     checks.note
+      note:     checks.note,
+      remarks:  document.getElementById('remarks').value.trim()
     };
 
     const controller = new AbortController();
@@ -468,7 +483,19 @@
 
   function onSuccess(reportUrl) {
     document.getElementById('loading').classList.remove('visible');
-    const msg = encodeURIComponent('פרוטוקול הקמה הושלם ✅\nלצפייה בדוח: ' + reportUrl);
+    const remarks = document.getElementById('remarks').value.trim();
+    const photosDone = Object.values(photos).filter(Boolean).length;
+    const checksDone = Object.values(checks).filter(Boolean).length;
+    const hasShortages = (photosDone + checksDone) < 7;
+
+    if (hasShortages || remarks) {
+      document.getElementById('success-icon').textContent = '⚠️';
+      document.getElementById('success-title').textContent = 'פרוטוקול נשלח עם חוסרים';
+      document.getElementById('success-msg').textContent = remarks || 'חלק מהפריטים לא הושלמו — מצוין בדוח.';
+    }
+
+    const header = (hasShortages || remarks) ? 'פרוטוקול הקמה ⚠️ יש חוסרים' : 'פרוטוקול הקמה הושלם ✅';
+    const msg = encodeURIComponent(header + '\nלצפייה בדוח: ' + reportUrl);
     document.getElementById('wa-link').href = 'https://wa.me/' + MANAGER_PHONE + '?text=' + msg;
     document.getElementById('success-screen').classList.add('visible');
   }
