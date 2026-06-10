@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>דוח הקמה</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      min-height: 100vh;
+    }
+    .header {
+      background: #1e293b;
+      color: white;
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+    .header h1 { font-size: 1.1rem; font-weight: 700; }
+    .header .time { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+    .container { max-width: 480px; margin: 0 auto; padding: 1rem; }
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      margin: 1.25rem 0 0.5rem;
+    }
+    .card {
+      background: white;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 0.5rem;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .check-row:last-child { border-bottom: none; }
+    .check-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .check-label { font-size: 0.9rem; color: #1e293b; }
+    .check-row.fail .check-label { color: #ef4444; }
+    .photos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      padding: 0.75rem;
+    }
+    .photo-card { text-align: center; }
+    .photo-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+    }
+    .photo-card .photo-name { font-size: 0.7rem; color: #64748b; margin-top: 0.25rem; }
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #lightbox.visible { display: flex; }
+    #lightbox img { max-width: 100%; max-height: 90vh; border-radius: 0.5rem; }
+    #lightbox-close {
+      position: absolute;
+      top: 1rem; left: 1rem;
+      color: white; font-size: 1.5rem; cursor: pointer;
+      background: rgba(255,255,255,0.15);
+      border: none; border-radius: 50%;
+      width: 36px; height: 36px;
+    }
+    .loading { text-align: center; padding: 4rem 2rem; color: #64748b; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #1e293b;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error { text-align: center; padding: 3rem; color: #ef4444; }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>דוח סיום הקמה — מלך הקסטות</h1>
+  <div class="time" id="report-time">טוען...</div>
+</div>
+<div class="container" id="content">
+  <div class="loading">
+    <div class="spinner"></div>
+    טוען דוח...
+  </div>
+</div>
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="">
+</div>
+<script>
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQedF8bnrM05DCeKClvpXUVB2pZOjXGDhpYoQNjCYauCQkUal2P8DpjilroF-bapzG/exec';
+  const CHECKS = [
+    { key: 'stand',    label: 'עמדה עומדת' },
+    { key: 'mixer',    label: 'חיווט מיקסר' },
+    { key: 'screens',  label: 'מסכים (להציג לפני עלייה)' },
+    { key: 'monitors', label: 'מוניטורים על הבמה' },
+    { key: 'water',    label: 'מים לעמדה' },
+    { key: 'mics',     label: 'מיקרופונים 275 דיליי עם סוללות' },
+    { key: 'note',     label: 'פתק שמות הזוג/החברה' }
+  ];
+  const params = new URLSearchParams(window.location.search);
+  const reportId = params.get('id');
+  if (!reportId) {
+    showError('לינק לא תקין.');
+  } else {
+    fetch(APPS_SCRIPT_URL + '?page=get_report&id=' + encodeURIComponent(reportId))
+      .then(r => r.text())
+      .then(text => {
+        let data;
+        try { data = JSON.parse(text); } catch(e) { throw new Error('תשובה לא תקינה'); }
+        renderReport(data);
+      })
+      .catch(() => showError('שגיאה בטעינת הדוח.'));
+  }
+  function renderReport(data) {
+    if (!data) { showError('דוח לא נמצא.'); return; }
+    document.getElementById('report-time').textContent = data.timestamp;
+    const allChecks = {
+      stand: data.checks.stand, mixer: data.checks.mixer,
+      screens: data.checks.screens, monitors: data.checks.monitors,
+      water: data.checks.water, mics: data.checks.mics, note: data.checks.note
+    };
+    const passed = Object.values(allChecks).filter(v => v === '✅').length;
+    const total = Object.values(allChecks).length;
+    let html = '';
+    const allOk = passed === total;
+    html += '<div style="background:' + (allOk?'#f0fdf4':'#fef2f2') + ';border-radius:0.75rem;padding:0.875rem 1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.75rem;margin-top:1rem"><span style="font-size:1.5rem">' + (allOk?'✅':'⚠️') + '</span><div><div style="font-weight:700;color:' + (allOk?'#16a34a':'#ef4444') + '">' + (allOk?'הכל תקין':'חסרים פריטים') + '</div><div style="font-size:0.8rem;color:#64748b">' + passed + ' מתוך ' + total + ' סעיפים הושלמו</div></div></div>';
+    html += '<div class="section-title">רשימת בדיקות</div><div class="card">';
+    CHECKS.forEach(function(c) {
+      var val = allChecks[c.key];
+      var ok = val === '✅';
+      html += '<div class="check-row ' + (ok?'':'fail') + '"><span class="check-icon">' + (ok?'✅':'❌') + '</span><span class="check-label">' + c.label + '</span></div>';
+    });
+    html += '</div>';
+    if (data.photos && data.photos.length > 0) {
+      html += '<div class="section-title">תמונות</div><div class="card"><div class="photos-grid">';
+      data.photos.forEach(function(p) {
+        html += '<div class="photo-card"><img src="' + p.url + '" onclick="openLightbox(\'' + p.url + '\')" loading="lazy"><div class="photo-name">' + p.name + '</div></div>';
+      });
+      html += '</div></div>';
+    }
+    document.getElementById('content').innerHTML = html;
+  }
+  function showError(msg) {
+    document.getElementById('content').innerHTML = '<div class="error">⚠️ ' + msg + '</div>';
+  }
+  function openLightbox(url) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox').classList.add('visible');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('visible');
+  }
+</script>
+</body>
+</html>
