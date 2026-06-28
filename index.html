@@ -340,6 +340,16 @@
       <div class="custom-check"></div>
       <span>פתק עם שמות הזוג/החברה על העמדה</span>
     </div>
+    <div class="check-item" onclick="toggleCheck(this,'lighting')">
+      <input type="checkbox" id="lighting">
+      <div class="custom-check"></div>
+      <span>תאורה על העמדה</span>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this,'blackCurtain')">
+      <input type="checkbox" id="blackCurtain">
+      <div class="custom-check"></div>
+      <span>בד שחור מאחורי העמדה</span>
+    </div>
   </div>
 
   <div class="section-title">📝 הערות / חוסרים</div>
@@ -350,7 +360,7 @@
 
 <div class="bottom-bar">
   <div class="bottom-bar-inner">
-    <div class="progress" id="progress-text"><strong>0</strong> מתוך 7 סעיפים הושלמו</div>
+    <div class="progress" id="progress-text"><strong>0</strong> מתוך 9 סעיפים הושלמו</div>
     <button class="submit-btn" id="submit-btn" onclick="submitForm()">שלח עם חוסרים ⚠️</button>
   </div>
 </div>
@@ -375,7 +385,7 @@
   ];
 
   const photos = { stand: null, mixer: null, screens: null };
-  const checks = { monitors: false, water: false, mics: false, note: false };
+  const checks = { monitors: false, water: false, mics: false, note: false, lighting: false, blackCurtain: false };
 
   function handlePhoto(input, key) {
     const file = input.files[0];
@@ -425,9 +435,9 @@
     const checksDone = Object.values(checks).filter(Boolean).length;
     const total = photosDone + checksDone;
     document.getElementById('progress-text').innerHTML =
-      '<strong>' + total + '</strong> מתוך 7 סעיפים הושלמו';
+      '<strong>' + total + '</strong> מתוך 9 סעיפים הושלמו';
     const btn = document.getElementById('submit-btn');
-    if (total === 7) {
+    if (total === 9) {
       btn.textContent = 'שלח פרוטוקול ✅';
       btn.style.background = '#d600d6';
       btn.style.boxShadow = '0 4px 10px rgba(214,0,214,0.3)';
@@ -446,10 +456,12 @@
       standPhoto:   photos.stand,
       mixerPhoto:   photos.mixer,
       screensPhoto: photos.screens,
-      monitors: checks.monitors,
-      water:    checks.water,
-      mics:     checks.mics,
-      note:     checks.note,
+      monitors:     checks.monitors,
+      water:        checks.water,
+      mics:         checks.mics,
+      note:         checks.note,
+      lighting:     checks.lighting,
+      blackCurtain: checks.blackCurtain,
       remarks:  document.getElementById('remarks').value.trim()
     };
 
@@ -485,7 +497,7 @@
     const remarks = document.getElementById('remarks').value.trim();
     const photosDone = Object.values(photos).filter(Boolean).length;
     const checksDone = Object.values(checks).filter(Boolean).length;
-    const hasShortages = (photosDone + checksDone) < 7;
+    const hasShortages = (photosDone + checksDone) < 9;
 
     if (hasShortages || remarks) {
       document.getElementById('success-icon').textContent = '⚠️';

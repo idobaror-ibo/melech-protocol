@@ -118,7 +118,9 @@
     { key: 'monitors', label: 'מוניטורים על הבמה' },
     { key: 'water',    label: 'מים לעמדה' },
     { key: 'mics',     label: 'מיקרופונים 275 דיליי עם סוללות' },
-    { key: 'note',     label: 'פתק שמות הזוג/החברה' }
+    { key: 'note',         label: 'פתק שמות הזוג/החברה' },
+    { key: 'lighting',     label: 'תאורה על העמדה' },
+    { key: 'blackCurtain', label: 'בד שחור מאחורי העמדה' }
   ];
   const params = new URLSearchParams(window.location.search);
   const reportId = params.get('id');
@@ -140,7 +142,8 @@
     const allChecks = {
       stand: data.checks.stand, mixer: data.checks.mixer,
       screens: data.checks.screens, monitors: data.checks.monitors,
-      water: data.checks.water, mics: data.checks.mics, note: data.checks.note
+      water: data.checks.water, mics: data.checks.mics, note: data.checks.note,
+      lighting: data.checks.lighting, blackCurtain: data.checks.blackCurtain
     };
     const passed = Object.values(allChecks).filter(v => v === '✅').length;
     const total = Object.values(allChecks).length;
